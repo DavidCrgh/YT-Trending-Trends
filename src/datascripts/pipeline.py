@@ -4,20 +4,20 @@ import pandas as pd
 class YTDataset:
     def __init__(self, path):
         self.path = path
-        self.df = None
+        self.vids_df = None
         self.init_df(path)
 
-    def get_channels_table(self, filters):
+    def get_tables(self, filters):
         # Calls the pipeline process to convert a table of videos to a table of channels
         filtered_df = self.filter_data(filters)
         channels_df = self.aggregate_channels(filtered_df)
 
-        return channels_df
+        return filtered_df, channels_df
 
     def filter_data(self, filters):
         # Takes the values of the 4 filter controls and uses pandas to select, where, etc...
         # This operation is always applied on the original data
-        return self.df  # TODO: implement
+        return self.vids_df  # TODO: implement
 
     def aggregate_channels(self, df):
         # Takes a YTDataset df, groups by channels, and aggregates (avg, counts, etc.)
@@ -59,4 +59,4 @@ class YTDataset:
                         'channel_category': 'category',
                         'video_category': 'category'})
 
-        self.df = df
+        self.vids_df = df
