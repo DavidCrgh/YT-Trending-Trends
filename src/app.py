@@ -9,6 +9,7 @@ import pandas as pd
 
 from datascripts.pipeline import YTDataset
 from components.controls.bubbleVars import BubbleVarsControl
+from components.controls.filters import FiltersControl
 
 # Constants
 DATA_PATH = '..\\data\\USvideos_table.csv'
@@ -22,7 +23,8 @@ _, channels_df = yt_dataset.get_tables(filters=[])
 # App components
 ## Controls
 ### Filters
-filters_control = dbc.Container([
+filters_control = FiltersControl(yt_dataset.vids_df, channels_df).controls
+'''filters_control = dbc.Container([
     html.Div([
         dbc.Label("Channel Category"),
         dcc.Dropdown(
@@ -52,7 +54,7 @@ filters_control = dbc.Container([
             initial_visible_month=date(2017, 8, 5),
         )
     ]),
-])
+])'''
 
 ### Bubble plot variables
 bubble_vars_control = BubbleVarsControl(channels_df).controls
@@ -104,15 +106,15 @@ app.layout = dbc.Container([
     Output('tables-storage', 'data'),
     Input('channel-category', 'value'),
     Input('vid-category', 'value'),
-    # Input('subs-range', 'value'),
-    Input('publish-date-range', 'start_date'),
-    Input('publish-date-range', 'end_date'),
+    Input('subs-range', 'value'),
+    Input('trending-date-range', 'start_date'),
+    Input('trending-date-range', 'end_date'),
 )
 def filter_tables(channel_cat,
                   video_cat,
-                  # subs_range,
+                  subs_range,
                   start_date, end_date):
-    print(channel_cat, video_cat, start_date, end_date)
+    print(channel_cat, video_cat, subs_range, start_date, end_date)
     filtered_vids, filtered_channels = yt_dataset.get_tables(filters=None)  # TODO: pass dict/list of filters
 
     dataframes = {
@@ -125,7 +127,6 @@ def filter_tables(channel_cat,
 
 @app.callback(
     Output('channels-plot', 'figure'),
-    #Output('dummy-label', 'children'),
     Input('tables-storage', 'data'),  # Also trigger after tables are updated in dcc.Store (browser memory)
     Input('bubble-x-axis', 'value'),
     Input('x-scale-radio', 'value'),
