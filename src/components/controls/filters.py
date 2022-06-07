@@ -1,12 +1,9 @@
 from datetime import date
 
-import numpy as np
 import pandas as pd
 
 from dash import dcc, html
 import dash_bootstrap_components as dbc
-
-#from src.utils.util_scripts import human_format
 
 
 class FiltersControl:

@@ -2,7 +2,9 @@ import json
 
 from dateutil import parser
 
-from dash import Dash, dcc, html, Input, Output, dash_table
+from dash import Dash, dcc, html, Input, Output
+from dash.dash_table import DataTable
+from dash.dash_table.Format import Format, Scheme
 import dash_bootstrap_components as dbc
 import plotly.express as px
 
@@ -36,7 +38,8 @@ timeseries_vars_control = TimeSeriesControl(yt_dataset.vids_df).controls
 app.layout = dbc.Container([
     dbc.Row([
         # TODO: move the styling here to a CSS file
-        html.H1("YouTube Trending & Trends (T&T)", style={'color': '#EB6864', 'margin-top': '10px', 'margin-bottom': '15px'}),
+        html.H1("YouTube Trending & Trends (T&T)",
+                style={'color': '#EB6864', 'margin-top': '10px', 'margin-bottom': '15px'}),
         html.Hr(style={'margin-bottom': '0px'}),
     ], style={'background-color': '#FDF0F0', 'margin-bottom': '20px'}),
     dbc.Row(
@@ -57,7 +60,16 @@ app.layout = dbc.Container([
                 md=8, lg=8),
             dbc.Col([
                 html.H3("Statistics"),
-                dbc.Label("TODO: summarization table goes here!", id='dummy-label'),
+                dbc.RadioItems(
+                    options=[
+                        {"label": "Channels", "value": 'channels'},
+                        {"label": "Videos", "value": 'vids'},
+                    ],
+                    value='channels',
+                    id="stats-table",
+                    inline=True,
+                ),
+                html.Div(id="summary-table-div"),
                 html.Hr(),
 
                 dbc.Accordion([
@@ -92,7 +104,6 @@ def filter_tables(channel_cat,
                   subs_range,
                   views_range,
                   start_date, end_date):
-
     filters = {
         # Videos df col  :  filter values
         'channel_category': channel_cat,
@@ -169,6 +180,43 @@ def update_timeseries(clickData, y_axis_var, dataframes):
     figure.update_traces(mode='lines+markers')
 
     return figure, f'{channel} Trending Videos'
+
+
+@app.callback(
+    Output('summary-table-div', 'children'),
+    Input('stats-table', 'value'),
+    Input('tables-storage', 'data')
+)
+def update_summary_table(selected_table, dataframes):
+    dataframes = json.loads(dataframes)
+    df = pd.read_json(dataframes['filtered_' + selected_table], orient='split')
+
+    stats = df.describe().transpose()[['mean', 'std', 'min', '50%', 'max']]
+    stats = stats.rename_axis('Variable').reset_index()  # Include row names as a column to display it
+    stats = stats.rename(columns={'mean': 'Mean',
+                                  'std': 'SD',
+                                  '50%': 'Median',
+                                  'min': 'Min',
+                                  'max': 'Max'})
+
+    table = DataTable(
+        data=stats.to_dict('records'),
+        columns=[{"name": i,
+                  "id": i,
+                  "type": "numeric",
+                  "format": Format(precision=2, scheme=Scheme.decimal_si_prefix)
+                  } for i in stats.columns],
+        style_cell_conditional=[
+            {
+                'if': {'column_id': c},
+                'textAlign': 'left'
+            } for c in stats.columns
+        ],
+        style_table={'overflowX': 'auto'},  # Horizontal scrolling
+        style_as_list_view=True
+    )
+
+    return table
 
 
 if __name__ == '__main__':
