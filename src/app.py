@@ -6,12 +6,14 @@ from dateutil import parser
 from dash import Dash, dcc, html, Input, Output
 import dash_bootstrap_components as dbc
 import plotly.express as px
+from plotly.subplots import make_subplots
 
 import pandas as pd
 
 from datascripts.pipeline import YTDataset
 from components.controls.bubbleVars import BubbleVarsControl
 from components.controls.filters import FiltersControl
+from components.controls.timeseriesVars import TimeSeriesControl
 
 # Constants
 DATA_PATH = '..\\data\\USvideos_table.csv'
@@ -29,6 +31,9 @@ filters_control = FiltersControl(yt_dataset.vids_df, channels_df).controls
 
 ### Bubble plot variables
 bubble_vars_control = BubbleVarsControl(channels_df).controls
+
+### Timeseries plot variables
+timeseries_vars_control = TimeSeriesControl(yt_dataset.vids_df).controls
 
 # Main app layout declaration
 app.layout = dbc.Container([
@@ -59,6 +64,7 @@ app.layout = dbc.Container([
                 dbc.Accordion([
                     dbc.AccordionItem([filters_control], title="Filters"),
                     dbc.AccordionItem([bubble_vars_control], title="Bubble plot variables"),
+                    dbc.AccordionItem([timeseries_vars_control], title='Timeseries variables')
                 ], always_open=True)],
                 md=4, lg=4)
         ],
@@ -129,7 +135,8 @@ def update_bubble_plot(dataframes,
                         x=x_axis_var, y=y_axis_var,
                         color=color_var,
                         size=size_var,
-                        hover_name='channel'
+                        hover_name='channel',
+                        size_max=25
                         )
 
     figure.update_xaxes(title=x_axis_var, type=x_axis_scale)
@@ -142,8 +149,9 @@ def update_bubble_plot(dataframes,
     Output('videos-plot', 'figure'),
     Output('channel-plot-header', 'children'),
     Input('channels-plot', 'clickData'),
+    Input('timeseries-y-var', 'value'),
     Input('tables-storage', 'data'))
-def update_timeseries(clickData, dataframes):
+def update_timeseries(clickData, y_axis_var, dataframes):
     dataframes = json.loads(dataframes)
     filtered_vids_df = pd.read_json(dataframes['filtered_vids'], orient='split')
     filtered_vids_df = filtered_vids_df.sort_values(by=['last_trending_date'])
@@ -158,8 +166,8 @@ def update_timeseries(clickData, dataframes):
             channel = selected_channel
 
     filtered_vids_df = filtered_vids_df[filtered_vids_df['channel'] == channel]  # Select only channel's vids
-    # TODO: change y var based on user selection
-    figure = px.scatter(filtered_vids_df, x='last_trending_date', y='views', hover_name='title')
+
+    figure = px.scatter(filtered_vids_df, x='last_trending_date', y=y_axis_var, hover_name='title')
     figure.update_traces(mode='lines+markers')
 
     return figure, f'{channel} Trending Videos'
