@@ -1,14 +1,14 @@
 import json
 
+import pandas as pd
+import plotly.express as px
+
 from dateutil import parser
 
 from dash import Dash, dcc, html, Input, Output
 from dash.dash_table import DataTable
 from dash.dash_table.Format import Format, Scheme
 import dash_bootstrap_components as dbc
-import plotly.express as px
-
-import pandas as pd
 
 from datascripts.pipeline import YTDataset
 from components.controls.bubbleVars import BubbleVarsControl

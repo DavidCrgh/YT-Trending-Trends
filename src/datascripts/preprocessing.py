@@ -1,5 +1,7 @@
 import pandas as pd
 
+from src.utils.util_scripts import format_channel_cat
+
 RAW_VIDS_PATH = '..\\..\\data\\raw\\USvideos_modified.csv'
 CHANNEL_CATS_PATH = '..\\..\\data\\raw\\Trending CrowdSourced Classification.csv'
 VIDEO_CATS_PATH = '..\\..\\data\\raw\\video_cats.csv'
@@ -29,6 +31,7 @@ videos_df = pd.merge(videos_df,
                       )
 videos_df = videos_df.drop(columns=['channel'])
 
+
 # Step 3 - Match video category ID with their category string
 videos_df = pd.merge(videos_df,
                      video_cats,
@@ -40,6 +43,9 @@ videos_df = videos_df.drop(columns=['category_id']) # We no longer need this col
 # Step 4 - Replace nan or null values
 videos_df['subscriber'] = videos_df['subscriber'].fillna(0)
 videos_df['classification'] = videos_df['classification'].fillna('UC') # UC for 'unclassified'
+videos_df['classification'] = videos_df.apply(
+    lambda row: format_channel_cat(row['classification']),
+    axis=1)  # Replace category initials with full name e.g. TM -> Traditional Media
 
 # Step 5 - Rename columns and save to CSV
 videos_df = videos_df.rename(columns={
