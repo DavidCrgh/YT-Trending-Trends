@@ -46,11 +46,11 @@ app.layout = dbc.Container([
                         ])
                     ]),
                     dbc.Row([
-                        html.H3("Good Mythical Morning's Videos"),
-                        dcc.Graph()
+                        html.H3("Channel Videos", id='channel-plot-header'),
+                        dcc.Graph(id='videos-plot')
                     ])
                 ]),
-                md=8),
+                md=8, lg=8),
             dbc.Col([
                 html.H3("Statistics"),
                 dbc.Label("TODO: summarization table goes here!", id='dummy-label'),
@@ -60,7 +60,7 @@ app.layout = dbc.Container([
                     dbc.AccordionItem([filters_control], title="Filters"),
                     dbc.AccordionItem([bubble_vars_control], title="Bubble plot variables"),
                 ], always_open=True)],
-                md=4)
+                md=4, lg=4)
         ],
         align='Center'
     ),
@@ -87,7 +87,7 @@ def filter_tables(channel_cat,
                   subs_range,
                   views_range,
                   start_date, end_date):
-    #print(channel_cat, video_cat, subs_range, start_date, end_date)
+    # print(channel_cat, video_cat, subs_range, start_date, end_date)
 
     filters = {
         # Videos df col  :  filter values
@@ -122,7 +122,6 @@ def update_bubble_plot(dataframes,
                        y_axis_var, y_axis_scale,
                        color_var,
                        size_var):
-
     dataframes = json.loads(dataframes)
     filtered_channels_df = pd.read_json(dataframes['filtered_channels'], orient='split')
 
@@ -137,6 +136,33 @@ def update_bubble_plot(dataframes,
     figure.update_yaxes(title=y_axis_var, type=y_axis_scale)
 
     return figure
+
+
+@app.callback(
+    Output('videos-plot', 'figure'),
+    Output('channel-plot-header', 'children'),
+    Input('channels-plot', 'clickData'),
+    Input('tables-storage', 'data'))
+def update_timeseries(clickData, dataframes):
+    dataframes = json.loads(dataframes)
+    filtered_vids_df = pd.read_json(dataframes['filtered_vids'], orient='split')
+    filtered_vids_df = filtered_vids_df.sort_values(by=['last_trending_date'])
+
+    channel = filtered_vids_df.channel.mode().iloc[0]  # Get most repeated channel
+
+    # If selection exists and is valid, overwrite channel
+    if clickData is not None:
+        selected_channel = clickData['points'][0]['hovertext']
+
+        if selected_channel in filtered_vids_df['channel'].values:
+            channel = selected_channel
+
+    filtered_vids_df = filtered_vids_df[filtered_vids_df['channel'] == channel]  # Select only channel's vids
+    # TODO: change y var based on user selection
+    figure = px.scatter(filtered_vids_df, x='last_trending_date', y='views', hover_name='title')
+    figure.update_traces(mode='lines+markers')
+
+    return figure, f'{channel} Trending Videos'
 
 
 if __name__ == '__main__':
