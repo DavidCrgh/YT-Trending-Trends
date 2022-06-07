@@ -1,12 +1,10 @@
 import json
-from datetime import date
 
 from dateutil import parser
 
-from dash import Dash, dcc, html, Input, Output
+from dash import Dash, dcc, html, Input, Output, dash_table
 import dash_bootstrap_components as dbc
 import plotly.express as px
-from plotly.subplots import make_subplots
 
 import pandas as pd
 
@@ -18,10 +16,9 @@ from components.controls.timeseriesVars import TimeSeriesControl
 # Constants
 DATA_PATH = '..\\data\\USvideos_table.csv'
 
-app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+app = Dash(__name__, external_stylesheets=[dbc.themes.JOURNAL])
 
 yt_dataset = YTDataset(DATA_PATH)
-# TODO: might have to delete this line once filter callbacks are implemented
 _, channels_df = yt_dataset.get_tables(filters={})
 
 # App components
@@ -37,9 +34,11 @@ timeseries_vars_control = TimeSeriesControl(yt_dataset.vids_df).controls
 
 # Main app layout declaration
 app.layout = dbc.Container([
-    html.H1("YouTube Trending & Trends (T&T)"),
-    html.Hr(),
-
+    dbc.Row([
+        # TODO: move the styling here to a CSS file
+        html.H1("YouTube Trending & Trends (T&T)", style={'color': '#EB6864', 'margin-top': '10px', 'margin-bottom': '15px'}),
+        html.Hr(style={'margin-bottom': '0px'}),
+    ], style={'background-color': '#FDF0F0', 'margin-bottom': '20px'}),
     dbc.Row(
         [
             dbc.Col(
@@ -65,7 +64,7 @@ app.layout = dbc.Container([
                     dbc.AccordionItem([filters_control], title="Filters"),
                     dbc.AccordionItem([bubble_vars_control], title="Bubble plot variables"),
                     dbc.AccordionItem([timeseries_vars_control], title='Timeseries variables')
-                ], always_open=True)],
+                ], always_open=False)],
                 md=4, lg=4)
         ],
         align='Center'
@@ -93,7 +92,6 @@ def filter_tables(channel_cat,
                   subs_range,
                   views_range,
                   start_date, end_date):
-    # print(channel_cat, video_cat, subs_range, start_date, end_date)
 
     filters = {
         # Videos df col  :  filter values

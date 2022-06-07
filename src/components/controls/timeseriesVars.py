@@ -17,7 +17,7 @@ class TimeSeriesControl:
 
         controls = dbc.Container([
             html.Div([
-                dbc.Label("Series 1"),
+                dbc.Label("Y axis"),
                 dcc.Dropdown(
                     id="timeseries-y-var",
                     options=numeric_vars,
