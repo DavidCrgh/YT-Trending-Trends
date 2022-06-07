@@ -6,7 +6,7 @@ import pandas as pd
 from dash import dcc, html
 import dash_bootstrap_components as dbc
 
-from src.utils.util_scripts import human_format
+#from src.utils.util_scripts import human_format
 
 
 class FiltersControl:
@@ -49,10 +49,10 @@ class FiltersControl:
                 dbc.Label("Subscriber range"),
                 self.generate_range_slider('subs-range', 'subscribers')
             ]),
-            #html.Div([
-             #   dbc.Label("Views range"),
-              #  self.generate_range_slider('views-range', 'views')
-            #]),
+            html.Div([
+                dbc.Label("Views range"),
+                self.generate_range_slider('views-range', 'views')
+            ]),
             #html.Div([
              #   dbc.Label("Comment count range"),
               #  self.generate_range_slider('comment-range', 'comment_count')

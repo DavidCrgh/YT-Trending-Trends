@@ -14,10 +14,22 @@ class YTDataset:
 
         return filtered_df, channels_df
 
-    def filter_data(self, filters):
+    def filter_data(self, filters: dict):
         # Takes the values of the 4 filter controls and uses pandas to select, where, etc...
         # This operation is always applied on the original data
-        return self.vids_df  # TODO: implement
+        print(filters)
+        print(f'Unfiltered size: {len(self.vids_df)}')
+        df = self.vids_df
+
+        for column, value in filters.items():
+            if type(value) is list and value != []:
+                df = df[df[column].isin(value)]
+            elif type(value) is tuple:
+                df = df[df[column].between(value[0], value[1])]
+
+        print(f'Filtered size: {len(df)}')
+
+        return df
 
     def aggregate_channels(self, df):
         # Takes a YTDataset df, groups by channels, and aggregates (avg, counts, etc.)
@@ -35,6 +47,8 @@ class YTDataset:
             avg_days_to_trending=('days_to_trending', 'mean'),
             avg_tags_count=('tags_count', 'mean'),
         )
+
+        channels_df = channels_df.dropna()  # NaN values are present if filtering was applied, no idea why
 
         return channels_df
 

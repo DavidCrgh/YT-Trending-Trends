@@ -1,6 +1,8 @@
 import json
 from datetime import date
 
+from dateutil import parser
+
 from dash import Dash, dcc, html, Input, Output
 import dash_bootstrap_components as dbc
 import plotly.express as px
@@ -18,43 +20,12 @@ app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
 yt_dataset = YTDataset(DATA_PATH)
 # TODO: might have to delete this line once filter callbacks are implemented
-_, channels_df = yt_dataset.get_tables(filters=[])
+_, channels_df = yt_dataset.get_tables(filters={})
 
 # App components
 ## Controls
 ### Filters
 filters_control = FiltersControl(yt_dataset.vids_df, channels_df).controls
-'''filters_control = dbc.Container([
-    html.Div([
-        dbc.Label("Channel Category"),
-        dcc.Dropdown(
-            id="channel-category",
-            options=['Hello', 'world'],  # TODO: change for list of numerical vars
-            value='Hello'
-        )
-    ]),
-    html.Div([
-        dbc.Label("Video category"),
-        dcc.Dropdown(
-            id="vid-category",
-            options=['Hello', 'world'],  # TODO: change for list of numerical vars
-            value='Hello'
-        )
-    ]),
-    # html.Div([
-    #   dbc.Label("Subscriber range"),
-    #  dcc.RangeSlider(0, 20, 1, value=[0, 20], id='subs-range')
-    # ]),
-    html.Div([
-        html.Div("Publish date"),
-        dcc.DatePickerRange(
-            id='publish-date-range',
-            min_date_allowed=date(1995, 8, 5),
-            max_date_allowed=date(2017, 9, 19),
-            initial_visible_month=date(2017, 8, 5),
-        )
-    ]),
-])'''
 
 ### Bubble plot variables
 bubble_vars_control = BubbleVarsControl(channels_df).controls
@@ -107,15 +78,27 @@ app.layout = dbc.Container([
     Input('channel-category', 'value'),
     Input('vid-category', 'value'),
     Input('subs-range', 'value'),
+    Input('views-range', 'value'),
     Input('trending-date-range', 'start_date'),
     Input('trending-date-range', 'end_date'),
 )
 def filter_tables(channel_cat,
                   video_cat,
                   subs_range,
+                  views_range,
                   start_date, end_date):
-    print(channel_cat, video_cat, subs_range, start_date, end_date)
-    filtered_vids, filtered_channels = yt_dataset.get_tables(filters=None)  # TODO: pass dict/list of filters
+    #print(channel_cat, video_cat, subs_range, start_date, end_date)
+
+    filters = {
+        # Videos df col  :  filter values
+        'channel_category': channel_cat,
+        'video_category': video_cat,
+        'subscribers': tuple(subs_range),
+        'views': tuple(views_range),
+        'last_trending_date': (parser.parse(start_date), parser.parse(end_date))
+    }
+
+    filtered_vids, filtered_channels = yt_dataset.get_tables(filters=filters)
 
     dataframes = {
         'filtered_vids': filtered_vids.to_json(orient='split', date_format='iso'),
