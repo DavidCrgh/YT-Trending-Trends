@@ -4,6 +4,7 @@ import pandas as pd
 from dash import dcc, html
 import dash_bootstrap_components as dbc
 
+from src.utils.util_scripts import map_vars_list
 
 class BubbleVarsControl:
     def __init__(self,
@@ -30,8 +31,9 @@ class BubbleVarsControl:
                 dbc.Label("X axis"),
                 dcc.Dropdown(
                     id='bubble-x-axis',
-                    options=numeric_vars,
-                    value=self.default_x
+                    options=map_vars_list(numeric_vars),
+                    value=self.default_x,
+                    clearable=False
                 ),
                 dbc.RadioItems(
                     options=[
@@ -47,8 +49,9 @@ class BubbleVarsControl:
                 dbc.Label("Y axis"),
                 dcc.Dropdown(
                     id="bubble-y-axis",
-                    options=numeric_vars,
-                    value=self.default_y
+                    options=map_vars_list(numeric_vars),
+                    value=self.default_y,
+                    clearable=False
                 ),
                 dbc.RadioItems(
                     options=[
@@ -64,7 +67,7 @@ class BubbleVarsControl:
                 dbc.Label("Color"),
                 dcc.Dropdown(
                     id="bubble-color",
-                    options=['channel_category'] + numeric_vars,
+                    options=map_vars_list(['channel_category'] + numeric_vars),
                     value=self.default_color_var
                 )
             ]),
@@ -72,7 +75,7 @@ class BubbleVarsControl:
                 dbc.Label("Bubble size"),
                 dcc.Dropdown(
                     id="bubble-size",
-                    options=numeric_vars,
+                    options=map_vars_list(numeric_vars),
                     value=self.default_size_var
                 )
             ]),

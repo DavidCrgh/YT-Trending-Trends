@@ -15,6 +15,8 @@ from components.controls.bubbleVars import BubbleVarsControl
 from components.controls.filters import FiltersControl
 from components.controls.timeseriesVars import TimeSeriesControl
 
+from src.utils.util_scripts import format_var_names
+
 # Constants
 DATA_PATH = '..\\data\\USvideos_table.csv'
 
@@ -145,11 +147,16 @@ def update_bubble_plot(dataframes,
                         color=color_var,
                         size=size_var,
                         hover_name='channel',
-                        size_max=25
-                        )
+                        size_max=25,
+                        labels={
+                            x_axis_var: format_var_names(x_axis_var),
+                            y_axis_var: format_var_names(y_axis_var),
+                            color_var: format_var_names(color_var),
+                            size_var: format_var_names(size_var)
+                        })
 
-    figure.update_xaxes(title=x_axis_var, type=x_axis_scale)
-    figure.update_yaxes(title=y_axis_var, type=y_axis_scale)
+    figure.update_xaxes(type=x_axis_scale)
+    figure.update_yaxes(type=y_axis_scale)
 
     return figure
 
@@ -161,11 +168,14 @@ def update_bubble_plot(dataframes,
     Input('timeseries-y-var', 'value'),
     Input('tables-storage', 'data'))
 def update_timeseries(clickData, y_axis_var, dataframes):
+    x_axis_var = 'last_trending_date'
+
     dataframes = json.loads(dataframes)
     filtered_vids_df = pd.read_json(dataframes['filtered_vids'], orient='split')
-    filtered_vids_df = filtered_vids_df.sort_values(by=['last_trending_date'])
+    filtered_vids_df = filtered_vids_df.sort_values(by=[x_axis_var])
 
     channel = filtered_vids_df.channel.mode().iloc[0]  # Get most repeated channel
+
 
     # If selection exists and is valid, overwrite channel
     if clickData is not None:
@@ -176,7 +186,15 @@ def update_timeseries(clickData, y_axis_var, dataframes):
 
     filtered_vids_df = filtered_vids_df[filtered_vids_df['channel'] == channel]  # Select only channel's vids
 
-    figure = px.scatter(filtered_vids_df, x='last_trending_date', y=y_axis_var, hover_name='title')
+    figure = px.scatter(filtered_vids_df,
+                        x=x_axis_var,
+                        y=y_axis_var,
+                        color_discrete_sequence=px.colors.qualitative.Pastel1,
+                        hover_name='title',
+                        labels={
+                            x_axis_var: format_var_names(x_axis_var),
+                            y_axis_var: format_var_names(y_axis_var)
+                        })
     figure.update_traces(mode='lines+markers')
 
     return figure, f'{channel} Trending Videos'
@@ -193,6 +211,9 @@ def update_summary_table(selected_table, dataframes):
 
     stats = df.describe().transpose()[['mean', 'std', 'min', '50%', 'max']]
     stats = stats.rename_axis('Variable').reset_index()  # Include row names as a column to display it
+    stats['Variable'] = stats.apply(
+        lambda row: format_var_names(row['Variable']),
+        axis=1)
     stats = stats.rename(columns={'mean': 'Mean',
                                   'std': 'SD',
                                   '50%': 'Median',

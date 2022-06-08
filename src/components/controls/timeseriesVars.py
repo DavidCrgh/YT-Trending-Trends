@@ -4,6 +4,8 @@ import pandas as pd
 from dash import dcc, html
 import dash_bootstrap_components as dbc
 
+from src.utils.util_scripts import map_vars_list
+
 
 class TimeSeriesControl:
     def __init__(self, vids_df: pd.DataFrame, default_y_one='views'):
@@ -20,7 +22,7 @@ class TimeSeriesControl:
                 dbc.Label("Y axis"),
                 dcc.Dropdown(
                     id="timeseries-y-var",
-                    options=numeric_vars,
+                    options=map_vars_list(numeric_vars),
                     value=self.default_y_one
                 )
             ])

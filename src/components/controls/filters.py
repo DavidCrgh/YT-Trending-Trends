@@ -62,8 +62,7 @@ class FiltersControl:
                     min_date_allowed=self.vids_df['last_trending_date'].min(),
                     max_date_allowed=self.vids_df['last_trending_date'].max(),
                     start_date=self.vids_df['last_trending_date'].min(),
-                    end_date=self.vids_df['last_trending_date'].max(),
-                    initial_visible_month=date(2017, 8, 5),
+                    end_date=self.vids_df['last_trending_date'].max()
                 )
             ]),
         ])
