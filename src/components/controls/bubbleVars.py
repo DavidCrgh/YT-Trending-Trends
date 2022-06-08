@@ -6,6 +6,7 @@ import dash_bootstrap_components as dbc
 
 from src.utils.util_scripts import map_vars_list
 
+
 class BubbleVarsControl:
     def __init__(self,
                  channels_df: pd.DataFrame,

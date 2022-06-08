@@ -176,7 +176,6 @@ def update_timeseries(clickData, y_axis_var, dataframes):
 
     channel = filtered_vids_df.channel.mode().iloc[0]  # Get most repeated channel
 
-
     # If selection exists and is valid, overwrite channel
     if clickData is not None:
         selected_channel = clickData['points'][0]['hovertext']
@@ -209,16 +208,7 @@ def update_summary_table(selected_table, dataframes):
     dataframes = json.loads(dataframes)
     df = pd.read_json(dataframes['filtered_' + selected_table], orient='split')
 
-    stats = df.describe().transpose()[['mean', 'std', 'min', '50%', 'max']]
-    stats = stats.rename_axis('Variable').reset_index()  # Include row names as a column to display it
-    stats['Variable'] = stats.apply(
-        lambda row: format_var_names(row['Variable']),
-        axis=1)
-    stats = stats.rename(columns={'mean': 'Mean',
-                                  'std': 'SD',
-                                  '50%': 'Median',
-                                  'min': 'Min',
-                                  'max': 'Max'})
+    stats = yt_dataset.summarize_data(df)
 
     table = DataTable(
         data=stats.to_dict('records'),
@@ -241,4 +231,4 @@ def update_summary_table(selected_table, dataframes):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=False)

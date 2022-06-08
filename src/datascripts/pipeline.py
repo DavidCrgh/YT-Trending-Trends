@@ -1,5 +1,6 @@
 import pandas as pd
 
+from src.utils.util_scripts import format_var_names
 
 class YTDataset:
     def __init__(self, path):
@@ -17,8 +18,6 @@ class YTDataset:
     def filter_data(self, filters: dict):
         # Takes the values of the 4 filter controls and uses pandas to select, where, etc...
         # This operation is always applied on the original data
-        print(filters)
-        print(f'Unfiltered size: {len(self.vids_df)}')
         df = self.vids_df
 
         for column, value in filters.items():
@@ -26,8 +25,6 @@ class YTDataset:
                 df = df[df[column].isin(value)]
             elif type(value) is tuple:
                 df = df[df[column].between(value[0], value[1])]
-
-        print(f'Filtered size: {len(df)}')
 
         return df
 
@@ -52,14 +49,21 @@ class YTDataset:
 
         return channels_df
 
-    def summarize_data(self, df, which='videos'):
+    def summarize_data(self, df):
         # Gets means, variances, min, max, etc. for a given df's numeric variables
-        # Which should be either 'videos', 'channels' or 'single' (stats for a single channel)
 
-        # NOTE: df.groupby().describe() might be useful here
-        # https://pandas.pydata.org/docs/user_guide/groupby.html
+        stats = df.describe().transpose()[['mean', 'std', 'min', '50%', 'max']]
+        stats = stats.rename_axis('Variable').reset_index()  # Include row names as a column to display it
+        stats['Variable'] = stats.apply(
+            lambda row: format_var_names(row['Variable']),
+            axis=1)
+        stats = stats.rename(columns={'mean': 'Mean',
+                                      'std': 'SD',
+                                      '50%': 'Median',
+                                      'min': 'Min',
+                                      'max': 'Max'})
 
-        return None  # TODO: implement
+        return stats
 
     def init_df(self, path):
         df = pd.read_csv(path)

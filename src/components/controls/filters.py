@@ -1,5 +1,3 @@
-from datetime import date
-
 import pandas as pd
 
 from dash import dcc, html
@@ -10,7 +8,6 @@ class FiltersControl:
     def __init__(self,
                  vids_df: pd.DataFrame,
                  channels_df: pd.DataFrame):
-
         self.vids_df = vids_df
         self.channels_df = channels_df
 
@@ -50,10 +47,6 @@ class FiltersControl:
                 dbc.Label("Views range"),
                 self.generate_range_slider('views-range', 'views')
             ]),
-            #html.Div([
-             #   dbc.Label("Comment count range"),
-              #  self.generate_range_slider('comment-range', 'comment_count')
-            #]),
             html.Hr(),
             html.Div([
                 html.Div("Last trending date"),
